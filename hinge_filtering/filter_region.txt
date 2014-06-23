@@ -1,0 +1,2 @@
+ATOM    694  O   GLU    85      
+ATOM    707  N   TYR    87 
