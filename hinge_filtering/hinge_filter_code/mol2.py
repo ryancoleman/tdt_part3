@@ -506,7 +506,10 @@ class Mol2(object):
           "%5d %5d %5d %5d %5d\n" % (
               len(self.atomNum), len(self.bondNum), 0, 0, 0))
       outFile.write("SMALL\nUSER_CHARGES\n\n")
-      outFile.write("mmff94s_NoEstat = %5.2f\n" % self.inputEnergy[oneXyz])
+      if oneXyz < len(self.inputEnergy):
+        outFile.write("mmff94s_NoEstat = %5.2f\n" % self.inputEnergy[oneXyz])
+      else:
+        outFile.write("mmff94s_NoEstat = %5.2f\n" % 0.0)
       outFile.write("@<TRIPOS>ATOM\n")
       for oneAtom in xrange(len(self.atomNum)):
         outFile.write(
@@ -532,24 +535,33 @@ class Mol2(object):
     outFile.close()
 
 def readDockMol2file(
-    mol2fileName, recdes=False, ligdes=False, charge=False, elec=False):
+    mol2fileName, allheaders=False, recdes=False, ligdes=False, charge=False,
+    elec=False):
   '''reads a dock output mol2 file, since each ligand has different connectivity
   this returns a list of Mol2 data classes instead of just one big one.
   if desired, can return the receptor desolvation as a list and/or
   the polar ligand desolvation scores as well'''
   mol2lines = []
   mol2data = []
+  mol2headers = []  # DOCK3.7 inserted comments read here
   mol2rd = []
   mol2ld = []
   mol2charge = []
   mol2elec = []
   mol2file = open(mol2fileName,	'r')
   mol2names = []
+  mol2headerTemp = []
   for mol2line in mol2file:
     if mol2line[:17] == "@<TRIPOS>MOLECULE":
+      if allheaders and len(mol2headerTemp) > 0:
+        mol2headers.append(mol2headerTemp[:]) 
+        mol2headerTemp = []
       if len(mol2lines) > 0:
         mol2data.append(Mol2(mol2text=mol2lines))
       mol2lines = []
+    if allheaders:
+      if mol2line[0] == '#' and len(mol2line) > 1:  # dock3.7 comments
+        mol2headerTemp.append(mol2line)   # very important, want to save
     if mol2line[0] != "#" and len(mol2line) > 1:
       mol2lines.append(mol2line)
     if mol2line[:32] == '##########                 Name:':
@@ -562,8 +574,10 @@ def readDockMol2file(
       mol2charge.append(float(string.split(mol2line)[3]))
     if mol2line[:32] == '##########        Electrostatic:':
       mol2elec.append(float(string.split(mol2line)[2]))
-  if len(mol2lines) > 0:
+  if len(mol2lines) > 0:  #  cleanup final entry
     mol2data.append(Mol2(mol2text=mol2lines))
+    if allheaders:
+      mol2headers.append(mol2headerTemp[:]) 
   for count, oneMol2 in enumerate(mol2data):
     oneMol2.name = mol2names[count]
   retList = [mol2data]
@@ -575,6 +589,8 @@ def readDockMol2file(
     retList.append(mol2charge)
   if elec:
     retList.append(mol2elec)
+  if allheaders:
+    retList.append(mol2headers)
   return tuple(retList)
 
 if 0 == string.find(sys.argv[0], "mol2.py"):
