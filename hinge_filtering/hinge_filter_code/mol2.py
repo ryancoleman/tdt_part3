@@ -509,11 +509,11 @@ class Mol2(object):
       if oneXyz < len(self.inputEnergy):
         outFile.write("mmff94s_NoEstat = %5.2f\n" % self.inputEnergy[oneXyz])
       else:
-        outFile.write("mmff94s_NoEstat = %5.2f\n" % 0.0)
+        outFile.write('\n')
       outFile.write("@<TRIPOS>ATOM\n")
       for oneAtom in xrange(len(self.atomNum)):
         outFile.write(
-            "%7d %6s    % 8.4f  % 8.4f  % 8.4f %5s     1 <0>       % 8.4f\n" % (
+            "%7d %6s    % 8.4f  % 8.4f  % 8.4f %5s     1           % 8.4f\n" % (
                 self.atomNum[oneAtom], string.ljust(self.atomName[oneAtom], 6),
                 self.atomXyz[oneXyz][oneAtom][0],
                 self.atomXyz[oneXyz][oneAtom][1],
