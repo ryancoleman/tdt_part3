@@ -23,7 +23,7 @@ outfile = open(outputLigandFile, 'w')
 for count in xrange(len(ligandData)):
   ligXyz = ligandData[count].atomXyz[0]  # the 0 is because some mol2s have
   #multiple conformations but never dock3.7 written mol2s so just get the 0th
-  passedAll = False
+  passedAll = True
   for xyz in filterPdb.coords:
     passedOne = False
     for oneLig in ligXyz:
@@ -31,6 +31,7 @@ for count in xrange(len(ligandData)):
         passedOne = True
         break
     if not passedOne:
+      passedAll = False
       break
   if passedAll:  # means it passes the filters
     for line in ligandHeader[count]:
