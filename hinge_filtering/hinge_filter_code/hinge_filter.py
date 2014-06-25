@@ -15,21 +15,25 @@ inputRegionFile = sys.argv[1]  # hardcoding these for now
 inputLigandFile = sys.argv[2]  # input file, from dock
 outputLigandFile = sys.argv[3]  # output file, just the good ones
 hingeFilterDistance = 4.5  # angstroms
-hingeFilterDistSquared = hingeFilterDistance**2.0
+hingeFilterDistSquared = hingeFilterDistance**2.0  # faster
+notAllowedAtomTypes = ['C', 'H']  # don't care about matching hydrogens 
+# or carbons for hydrogen bonds. only heavy atoms that aren't carbon.
 ligandData, ligandHeader = mol2.readDockMol2file(
     inputLigandFile, allheaders=True)
 filterPdb = pdb.pdbData(inputRegionFile)
 outfile = open(outputLigandFile, 'w')
 for count in xrange(len(ligandData)):
   ligXyz = ligandData[count].atomXyz[0]  # the 0 is because some mol2s have
+  ligAtomType = ligandData[count].atomType  # need types too
   #multiple conformations but never dock3.7 written mol2s so just get the 0th
   passedAll = True
   for xyz in filterPdb.coords:
     passedOne = False
-    for oneLig in ligXyz:
-      if geometry.distL2Squared3(oneLig, xyz) < hingeFilterDistSquared:
-        passedOne = True
-        break
+    for atomCount, oneLig in enumerate(ligXyz):
+      if ligAtomType[atomCount][0] not in notAllowedAtomTypes:
+        if geometry.distL2Squared3(oneLig, xyz) < hingeFilterDistSquared:
+          passedOne = True
+          break
     if not passedOne:
       passedAll = False
       break
