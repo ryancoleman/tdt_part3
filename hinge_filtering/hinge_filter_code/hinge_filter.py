@@ -16,7 +16,8 @@ inputLigandFile = sys.argv[2]  # input file, from dock
 outputLigandFile = sys.argv[3]  # output file, just the good ones
 hingeFilterDistance = 4.5  # angstroms
 hingeFilterDistSquared = hingeFilterDistance**2.0  # faster
-notAllowedAtomTypes = ['C', 'H']  # don't care about matching hydrogens 
+notAllowedAtomTypes = ['C', 'H', 'F', 'B', 'I']
+# don't care about matching hydrogens 
 # or carbons for hydrogen bonds. only heavy atoms that aren't carbon.
 ligandData, ligandHeader = mol2.readDockMol2file(
     inputLigandFile, allheaders=True)
